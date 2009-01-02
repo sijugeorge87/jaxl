@@ -5,9 +5,25 @@ Though it's not mandatory but will be helpful if you have given a casual reading
   * [http://xmpp.org/rfcs/rfc3920.html Extensible Messaging and Presence Protocol(XMPP):Core]
   * [http://xmpp.org/rfcs/rfc3921.html Extensible Messaging and Presence Protocol(XMPP):Instant Messaging and Presence]
 
-= Details =
+= Case: Google Talk Server =
+Following are the XML Streams and Stanza's exchanged when you try to connect to gtalk server.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+JAXL Sends >>
+{{{
+<?xml version="1.0"?>
+<stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="gmail.com" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+}}}
+
+Gtalk Acknowledges with >>
+{{{
+<?xml version="1.0" encoding="UTF-8"?>
+<stream:stream from="gmail.com" id="981E0522D7363BDF" version="1.0" xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client">
+<stream:features>
+  <starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls">
+    <required/>
+  </starttls>
+  <mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">
+    <mechanism>X-GOOGLE-TOKEN</mechanism>
+  </mechanisms>
+</stream:features>
+}}}

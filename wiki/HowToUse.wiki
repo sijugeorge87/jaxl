@@ -8,6 +8,27 @@ Base XMPP class library implements the XMPP protocol and also provides you with 
 
 You should have a look at included _jaxl.class.php_ and modify extended eventMessage() and eventPresence() methods as required.
 
+This library includes the following files:
+
+== Example key.db.class ==
+{{{
+  $env = "prod";
+  
+  $key = array("prod"=>array("user"=>"myproduction",
+                             "pass"=>"password",
+                             "host"=>"talk.google.com",
+                             "port"=>5222,
+                             "domain"=>"gmail.com"
+                            ),
+              "devel"=>array("user"=>"abhinavsingh",
+                             "pass"=>"password",
+                             "host"=>"localhost",
+                             "port"=>5222,
+                             "domain"=>"localhost"
+                            )
+              );
+}}}
+
 
 == Example JAXL Class ==
 {{{
@@ -25,5 +46,32 @@ You should have a look at included _jaxl.class.php_ and modify extended eventMes
       // Take necessary action when a presence is received
     }
     
+  }
+}}}
+
+== Final index.php ==
+{{{
+  /* Include Key file */
+  include_once("key.db.php");
+  
+  /* Create an instance of XMPP Class */
+  $jaxl = new JAXL($key[$env]['host'],
+                   $key[$env]['port'],
+                   $key[$env]['user'],
+                   $key[$env]['pass'],
+                   $key[$env]['domain']
+                  );
+  
+  try {
+    /* Initiate the connection */
+    $jaxl->connect();
+    
+    /* Communicate with Jabber Server */
+    while($jaxl->isConnected) {
+      $jaxl->getXML();
+    }
+  }
+  catch(Exception $e) {
+    die($e->getMessage());
   }
 }}}

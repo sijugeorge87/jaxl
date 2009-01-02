@@ -2,11 +2,11 @@ This wiki page will take you through on how to use JAXL Client library
 
 = Introduction =
 
-JAXL Client Library is highly structured. There is a base XMPP class library *(xmpp.class.php)* and a JAXL class library *(jaxl.class.php)* which is derived from the base XMPP class library.
+JAXL Client Library is highly structured. There is a base XMPP class library _(xmpp.class.php)_ and a JAXL class library _(jaxl.class.php)_ which is derived from the base XMPP class library.
 
-Base XMPP class library implements the XMPP protocol and also provides you with two extendable methods named *eventMessage()* and *eventPresence()*. These methods are internally called when a message or presence XML Stanza is received from the Jabber server.
+Base XMPP class library implements the XMPP protocol and also provides you with two extendable methods named _eventMessage()_ and _eventPresence()_. These methods are internally called when a message or presence XML Stanza is received from the Jabber server.
 
-You should have a look at included *jaxl.class.php* and modify extended eventMessage() and eventPresence() methods as required.
+You should have a look at included _jaxl.class.php_ and modify extended eventMessage() and eventPresence() methods as required.
 
 
 == Example JAXL Class ==

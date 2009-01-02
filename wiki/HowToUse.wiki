@@ -39,7 +39,7 @@ Specify all your username, password in this file. You can specify more than one 
               );
   
   $db = array("prod"=>array("dbuser"=>"root",
-                            "dbpass"=>"lifeislife",
+                            "dbpass"=>"password",
                             "dbhost"=>"localhost",
                             "dbname"=>"jaxl"
                            ),

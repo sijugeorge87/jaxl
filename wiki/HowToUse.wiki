@@ -40,6 +40,7 @@ Until and unless you are aware of what are you trying to achieve you should not 
 == Logger Class (logger.class.php) ==
 This is a basic logger class.
 It help you log each and every XML send to and received from jabber server. 
+Might prove helpful in debugging and if you are interested in learning the core of XMPP Protocol.
 
 == Extended JAXL Class (jaxl.class.php) ==
 You will be customizing eventMessage() and eventPresence() methods here. 

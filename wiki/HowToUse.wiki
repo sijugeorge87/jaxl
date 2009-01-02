@@ -60,7 +60,7 @@ You will be customizing eventMessage() and eventPresence() methods here.
     
   }
 }}}
-In above example I send a message back saying _"Hi, Thanks for your message"_, when I receive an IM from my friend.
+In above example, it sends back a message saying _"Hi, Thanks for your message"_, when I receive an IM from my friend.
 
 == Final index.php ==
 {{{

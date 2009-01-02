@@ -16,13 +16,13 @@ Specify all your username, password in this file. You can specify more than one 
 {{{
   $env = "prod";
   
-  $key = array("prod"=>array("user"=>"myproduction",
+  $key = array("prod"=>array("user"=>"myproductionuser",
                              "pass"=>"password",
                              "host"=>"talk.google.com",
                              "port"=>5222,
                              "domain"=>"gmail.com"
                             ),
-              "devel"=>array("user"=>"abhinavsingh",
+              "devel"=>array("user"=>"mydevelopmentuser",
                              "pass"=>"password",
                              "host"=>"localhost",
                              "port"=>5222,

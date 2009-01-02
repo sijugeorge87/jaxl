@@ -1,3 +1,4 @@
+#labels Featured
 This wiki page will take you through on how to use JAXL Client library
 
 = Introduction =
@@ -10,7 +11,7 @@ You should have a look at included _jaxl.class.php_ and modify extended eventMes
 
 This library includes the following files:
 
-== Example KeyDb Class (key.db.php) ==
+== Example Key Db Class (key.db.php) ==
 Specify all your username, password in this file. You can specify more than one username and choose which one to use by changing $env variable.
 {{{
   $env = "prod";
@@ -33,10 +34,12 @@ While working in a test environment you must be using $env = "devel"
 and while working in production environment you must switch to $env = "prod" 
 
 == Base XMPP Class (xmpp.class.php) ==
-You should not worry about this class. Until and unless you are aware of what are you trying to achieve you should not touch this class file.
+You should not worry about this class. 
+Until and unless you are aware of what are you trying to achieve you should not touch this class file.
 
 == Logger Class (logger.class.php) ==
-This is a basic logger class which help you log each and every XML send to and received from jabber server. 
+This is a basic logger class.
+It help you log each and every XML send to and received from jabber server. 
 
 == Example JAXL Class (jaxl.class.php) ==
 {{{

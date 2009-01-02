@@ -42,6 +42,7 @@ This is a basic logger class.
 It help you log each and every XML send to and received from jabber server. 
 
 == Example JAXL Class (jaxl.class.php) ==
+You will be customizing eventMessage() and eventPresence() methods here. 
 {{{
   /* Include Base XMPP Class */
   include_once("xmpp.class.php");
@@ -59,6 +60,7 @@ It help you log each and every XML send to and received from jabber server.
     
   }
 }}}
+In above example I send a message back saying _"Hi, Thanks for your message"_, when I receive an IM from my friend.
 
 == Final index.php ==
 {{{

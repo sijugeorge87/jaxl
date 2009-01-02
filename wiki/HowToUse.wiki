@@ -11,7 +11,7 @@ You should have a look at included _jaxl.class.php_ and modify extended eventMes
 
 == Example JAXL Class ==
 {{{
-  /* Include XMPP Class */
+  /* Include Base XMPP Class */
   include_once("xmpp.class.php");
   
   class JAXL extends XMPP {

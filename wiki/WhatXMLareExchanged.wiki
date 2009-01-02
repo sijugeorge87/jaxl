@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Behind the scenes - How and What XML's are exchanged
 
 = Introduction =
 

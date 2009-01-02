@@ -1,9 +1,9 @@
 #summary Behind the scenes - How and What XML's are exchanged
 
-= Introduction =
-
-Add your content here.
-
+= Pre-requisite =
+Though it's not mandatory but will be helpful if you have given a casual reading to the following RFC's
+  * [Extensible Messaging and Presence Protocol (XMPP): Core http://xmpp.org/rfcs/rfc3920.html]
+  * [Extensible Messaging and Presence Protocol (XMPP): Instant Messaging and Presence http://xmpp.org/rfcs/rfc3921.html]
 
 = Details =
 

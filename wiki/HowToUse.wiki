@@ -56,16 +56,23 @@ You will be customizing eventMessage() and eventPresence() methods here.
     
     function eventPresence($fromJid, $status, $photo) {
       // Take necessary action when a presence is received
+      $this->sendStatus($status);
     }
     
   }
 }}}
-In above example, it sends back a message saying _"Hi, Thanks for your message"_, when I receive an IM from my friend.
+
+In above example I have done two things:
+  * Sends back a message saying _"Hi, Thanks for your message"_, when I receive an IM from my friend.
+  * Change my status message, as and when I receive a status update from my friends.
 
 == Final index.php ==
 {{{
   /* Include Key file */
   include_once("key.db.php");
+
+  /* Include JAXL */
+  include_once("jaxl.class.php");
   
   /* Create an instance of XMPP Class */
   $jaxl = new JAXL($key[$env]['host'],

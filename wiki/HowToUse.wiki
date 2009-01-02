@@ -9,9 +9,21 @@ Base XMPP class library implements the XMPP protocol and also provides you with 
 You should have a look at included *jaxl.class.php* and modify extended eventMessage() and eventPresence() methods as required.
 
 
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+== Example JAXL Class ==
+{{{
+  /* Include XMPP Class */
+  include_once("xmpp.class.php");
+  
+  class JAXL extends XMPP {
+    
+    function eventMessage($fromJid, $content, $offline = FALSE) {
+      // Take necessary action when a message is received 
+      $this->sendMessage($fromJid,"Hi, Thanks for your message");
+    }
+    
+    function eventPresence($fromJid, $status, $photo) {
+      // Take necessary action when a presence is received
+    }
+    
+  }
+}}}

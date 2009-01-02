@@ -8,13 +8,13 @@ Though it's not mandatory but will be helpful if you have given a casual reading
 = Case: Google Talk Server =
 Following are the XML Streams and Stanza's exchanged when you try to connect to gtalk server.
 
-JAXL Sends >>
+  * JAXL Sends >>
 {{{
 <?xml version="1.0"?>
 <stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="gmail.com" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">
 }}}
 
-Gtalk Acknowledges with >>
+  * Gtalk Acknowledges with >>
 {{{
 <?xml version="1.0" encoding="UTF-8"?>
 <stream:stream from="gmail.com" id="981E0522D7363BDF" version="1.0" xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client">

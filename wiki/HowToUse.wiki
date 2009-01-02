@@ -1,4 +1,3 @@
-#labels Featured
 This wiki page will take you through on how to use JAXL Client library
 
 = Introduction =

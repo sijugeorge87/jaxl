@@ -47,7 +47,7 @@
   /* Include XMPP Class */
   include_once("xmpp.class.php");
   
-  class JAXL extends XMPP` {
+  class JAXL extends XMPP {
     
     function eventMessage($fromJid, $content, $offline = FALSE) {
       if($offline) {

@@ -41,7 +41,7 @@
   */
   
   // Set an enviornment
-  $env = "devel";
+  $env = "prod";
   
   // Log Level for logger class
   $logEnable = TRUE;

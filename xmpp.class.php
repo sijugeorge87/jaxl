@@ -66,6 +66,7 @@
       $this->lastSendTime = 0;
       $this->logEnable = $logEnable;
       $this->logDB = $logDB;
+      $this->sessionRequired = FALSE;
       $this->secondChallenge = FALSE;
       $this->presenceType = array("unavailable", "subscribe", "subscribed", "unsubscribe", "unsubscribed", "probe", "error");
       
@@ -312,6 +313,9 @@
           $xml .= '<resource>'.$this->resource.'</resource>';
           $xml .= '</bind>';
           $xml .= '</iq>';
+          
+          /* Reference: http://code.google.com/p/jaxl/issues/detail?id=1 */
+          $this->sessionRequired = isset($arrStreamFeatures["#"]["session"]);
         }
         $this->sendXML($xml);
       }
@@ -345,6 +349,10 @@
     function parseIq($arr) {
       if(isset($arr["iq"]["#"]["bind"])) {
         $this->jid = $arr["iq"]["#"]["bind"][0]["#"]["jid"][0]["#"];
+        if($this->sessionRequired) { $this->startSession(); }
+        else { $this->bind(); }
+      }
+      else if(isset($arr["iq"]["#"]["session"])) {
         $this->bind();
       }
       else if(isset($arr["iq"]["#"]["query"])) {
@@ -380,6 +388,20 @@
     function bind() {
       $this->auth = TRUE;
       $this->getFeatureList();
+    }
+    
+    /*
+     * startSession() method called if session is required
+     * Added after issue found with connection to local Ejabberd server
+     * Reference: http://code.google.com/p/jaxl/issues/detail?id=1
+    */
+    function startSession() {
+      print "Starting Session...\n";
+      $xml = '';
+      $xml .= '<iq type="set" id="'.$this->getId().'" to="'.$this->domain.'">';
+      $xml .= '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>';
+      $xml .= '</iq>';
+      $this->sendXML($xml);
     }
     
     /*
@@ -431,6 +453,9 @@
         }
         else if(isset($arr["presence"]["#"]["x"][1]["#"]["photo"])) {
           $photo = $arr["presence"]["#"]["x"][1]["#"]["photo"][0]["#"];
+        }
+        else {
+          $photo = "";
         }
         
         $this->eventPresence($fromJid,$status,$photo);

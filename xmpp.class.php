@@ -352,9 +352,6 @@
         if($this->sessionRequired) { $this->startSession(); }
         else { $this->bind(); }
       }
-      else if(isset($arr["iq"]["#"]["session"])) {
-        $this->bind();
-      }
       else if(isset($arr["iq"]["#"]["query"])) {
         $ns = $arr["iq"]["#"]["query"][0]["@"]["xmlns"];
         switch($ns) {
@@ -379,6 +376,9 @@
             break;
         }
       }
+      else if(isset($arr["iq"]["#"]["session"]) || ($arr['iq']['@']['type'] == "result" && $arr['iq']['@']['id'] == "sess_1")) {
+        $this->bind();
+      }
     }
     
     /*
@@ -398,7 +398,7 @@
     function startSession() {
       print "Starting Session...\n";
       $xml = '';
-      $xml .= '<iq type="set" id="'.$this->getId().'" to="'.$this->domain.'">';
+      $xml .= '<iq type="set" id="sess_1" to="'.$this->domain.'">';
       $xml .= '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>';
       $xml .= '</iq>';
       $this->sendXML($xml);

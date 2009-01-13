@@ -77,6 +77,13 @@
       }
     }
     
+    function setStatus() {
+      // Set a custom status or use $this->status
+      $this->sendStatus($this->status);
+      print "Setting Status...\n";
+      print "Done\n";
+    }
+    
   }
   
 ?>

@@ -42,7 +42,7 @@
    *    parseStream(), parseProceed(), parseSuccess(), parsePresence(), parseMessage(), parseIq(), parseChallenge()
    *    getFeatureList(), getIq(), getId(), getJid(), getTime(), getXML()
    *    bind(), splitXML(), subscribe(), eventMessage(), eventPresence(), explodeData(), implodeData()
-   *    encryptPassword(), getBareJid(), splitJid(), roster()
+   *    encryptPassword(), getBareJid(), splitJid(), roster(), setStatus()
   */
   
   
@@ -77,6 +77,11 @@
       $this->domain = $domain;
       $this->resource = "jaxl";
       $this->status = "Online using JAXL - Just Another XMPP Library";
+      
+      // This variable is set to TRUE when 
+      // authentication, service discovery, 
+      // roster request has taken place
+      $this->done = FALSE;
       
       $this->logger = new Logger("Initializing class variables");
       if($this->logDB) { $this->mysql = new MySQL($dbhost,$dbname,$dbuser,$dbpass); }
@@ -357,18 +362,22 @@
         switch($ns) {
           case "jabber:iq:roster":
             $rosters = $arr["iq"]["#"]["query"][0]["#"]["item"];
-            foreach($rosters as $roster) {
-              $roster = $roster["@"];
-              if($roster["subscription"] == "none") {
-                $this->subscribe($roster["jid"]);
-              }
-              else if($roster["subscription"] == "both") {
-                
+            // Do-not enter this loop, if no item present in roster
+            if(count($rosters)) {
+              foreach($rosters as $roster) {
+                $roster = $roster["@"];
+                if($roster["subscription"] == "none") {
+                  $this->subscribe($roster["jid"]);
+                }
+                else if($roster["subscription"] == "both") {
+                  
+                }
               }
             }
-            $this->sendStatus($this->status);
-            print "Setting Status...\n";
-            print "Done\n";
+            if(!$this->done) {
+              $this->done = TRUE;
+              $this->setStatus();
+            }
             break;
           case "http://jabber.org/protocol/disco#info":
             $this->roster('get');
@@ -499,20 +508,6 @@
         $content = $arr["#"]["body"][0]["#"];
         $this->eventMessage($fromJid, $content, TRUE);
       }
-    }
-    
-    /*
-     * eventMessage() method called when a message stanza is received
-    */
-    function eventMessage($fromJid, $content, $offline = FALSE) {
-      
-    }
-    
-    /*
-     * eventPresence() method is called when a presence stanza is received
-    */
-    function eventPresence($fromJid, $status, $photo) {
-      
     }
     
     /*
@@ -709,6 +704,29 @@
     function splitJid($jid) {
       preg_match("/(?:([^\@]+)\@)?([^\/]+)(?:\/(.*))?$/",$jid,$matches);
       return array($matches[1],$matches[2],@$matches[3]);
+    }
+    
+    
+    /*
+     * eventMessage() method called when a message stanza is received
+    */
+    function eventMessage($fromJid, $content, $offline = FALSE) {
+      
+    }
+    
+    /*
+     * eventPresence() method is called when a presence stanza is received
+    */
+    function eventPresence($fromJid, $status, $photo) {
+      
+    }
+    
+    /*
+     * setStatus() method is called after auth, service discovery and roster request
+     * used to set a custom status message
+    */
+    function setStatus() {
+      // Extended by JAXL class
     }
     
   }

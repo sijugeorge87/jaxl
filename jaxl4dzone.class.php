@@ -148,6 +148,12 @@
       }
     }
     
+    function setStatus() {
+      $this->sendStatus("Type *options* to get started");
+      print "Setting Status...\n";
+      print "Done\n";
+    }
+    
     function fetchWebURL($url) {
       $options = array(
         CURLOPT_RETURNTRANSFER => true,         // return web page

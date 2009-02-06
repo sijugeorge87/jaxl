@@ -1,3 +1,16 @@
+Version 1.0.4
+-------------
+Implementation of Google's Gmail Extension http://code.google.com/apis/talk/jep_extensions/gmail.html
+
+Added another method of interest eventNewEMail() which is called 
+when a gtalk user recieves a new email in his/her google mail box.
+Works both for Gmail as well as Google apps user.
+
+Updated File(s):
+xmpp.class.php implementation of Google Gmail Extension
+jaxl.class.php now also extending eventNewEMail() method
+jaxl4gmail.class.php a sample application for newly implemented extension
+
 Version 1.0.3
 -------------
 Fixed Issue http://code.google.com/p/jaxl/issues/detail?id=2

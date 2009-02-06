@@ -45,7 +45,6 @@
    *    encryptPassword(), getBareJid(), splitJid(), roster(), setStatus()
   */
   
-  
   include_once("logger.class.php");
   include_once("mysql.class.php");
   include_once("xml.class.php");
@@ -78,10 +77,11 @@
       $this->resource = "jaxl";
       $this->status = "Online using JAXL - Just Another XMPP Library";
       
-      // This variable is set to TRUE when 
-      // authentication, service discovery, 
-      // roster request has taken place
+      // This variable is set to TRUE when authentication, service discovery, roster request has taken place
       $this->done = FALSE;
+      
+      // Gmail Email related variables
+      $this->resultTime = FALSE;
       
       $this->logger = new Logger("Initializing class variables");
       if($this->logDB) { $this->mysql = new MySQL($dbhost,$dbname,$dbuser,$dbpass); }
@@ -262,9 +262,22 @@
           case isset($arr['challenge']):
             $this->parseChallenge($arr);
             break;
+          case isset($arr['stream:error']):
+            $this->parseError($arr);
+            break;
           default:
             break;
         }
+      }
+    }
+    
+    /*
+     * parseError() method parses the stream error cases
+    */
+    function parseError($arr) {
+      if(isset($arr["stream:error"]["#"]["see-other-host"]) && $arr["stream:error"]["#"]["str:text"][0]["@"]["xmlns:str"] == "urn:ietf:params:xml:ns:xmpp-streams") {
+        // http://code.google.com/p/jaxl/issues/detail?id=6
+        // Bug # 6, to be fixed in upcoming releases
       }
     }
     
@@ -352,7 +365,51 @@
      * parseIq() method
     */
     function parseIq($arr) {
-      if(isset($arr["iq"]["#"]["bind"])) {
+      if(isset($arr["iq"]["#"]["mailbox"])) {
+        // Implementation of Google's Gmail Extension http://code.google.com/apis/talk/jep_extensions/gmail.html
+        $GmailThreadId = array();
+        $GmailURL = array();
+        // 0 means user has not participated in this thread
+        // 1 means user is one of the many recipients listed in the thread
+        // 2 means user is the sole recipient of this thread
+        $GmailParticipation = array();
+        // Indicated number of messages in this thread
+        $GmailMessages = array();
+        $GmailDate = array();
+        // For a multi-message thread, it contains sender information of each thread
+        // E.g. $GmailSenders = array([0] => array("address","name","originator","unread")); where
+        // address is the mail address of the sender[0]
+        // name is the name of the sender[0]
+        // originator = 1 means this person started the thread, originator = 0 means otherwise
+        // unread = 1 means this thread includes unread messages, unread = 0 means otherwise
+        $GmailSenders = array();
+        $GmailLabels = array();
+        $GmailSubject = array();
+        $GmailSnippet = array();
+        
+        $GmailTotalMatched = $arr["iq"]["#"]["mailbox"][0]["@"]["total-matched"];
+        $this->resultTime = $arr["iq"]["#"]["mailbox"][0]["@"]["result-time"];
+        
+        foreach($arr["iq"]["#"]["mailbox"][0]["#"]["mail-thread-info"] as $mailThread) {
+          array_push($GmailThreadId,$mailThread["@"]["tid"]);
+          array_push($GmailURL,$mailThread["@"]["url"]);
+          array_push($GmailParticipation,$mailThread["@"]["participation"]);
+          array_push($GmailMessages,$mailThread["@"]["messages"]);
+          array_push($GmailDate,$mailThread["@"]["date"]);
+          foreach($mailThread["#"]["senders"][0]["#"]["sender"] as $sender) {
+            array_push($GmailSenders,array("address"=>$sender["@"]["address"],"name"=>$sender["@"]["name"],"originator"=>$sender["@"]["originator"],"unread"=>$sender["@"]["unread"]));
+          }
+          array_push($GmailLabels,$mailThread["#"]["labels"][0]["#"]);
+          array_push($GmailSubject,$mailThread["#"]["subject"][0]["#"]);
+          array_push($GmailSnippet,$mailThread["#"]["snippet"][0]["#"]);
+        }
+        $this->eventNewEMail($GmailTotalMatched,$GmailThreadId,$GmailURL,$GmailParticipation,$GmailMessages,$GmailDate,$GmailSenders,$GmailLabels,$GmailSubject,$GmailSnippet);
+      }
+      else if(isset($arr["iq"]["#"]["new-mail"]) && $arr["iq"]["#"]["new-mail"][0]["@"]["xmlns"] == "google:mail:notify") {
+        // Implementation of Google's Gmail Extension http://code.google.com/apis/talk/jep_extensions/gmail.html
+        $this->getNewEMail();
+      }
+      else if(isset($arr["iq"]["#"]["bind"])) {
         $this->jid = $arr["iq"]["#"]["bind"][0]["#"]["jid"][0]["#"];
         if($this->sessionRequired) { $this->startSession(); }
         else { $this->bind(); }
@@ -706,19 +763,40 @@
       return array($matches[1],$matches[2],@$matches[3]);
     }
     
+    /*
+     * getNewEMail() is a Gmail specific function which queries for new mails in the inbox
+    */
+    function getNewEMail() {
+      $xml = '<iq type="get" from="'.$this->jid.'" to="'.$this->getBareJid($this->jid).'" id="'.$this->getId().'">';
+      if($this->resultTime) {
+        $xml .= '<query xmlns="google:mail:notify" newer-than-time="'.$this->resultTime.'" />';
+      }
+      else {
+        $xml .= '<query xmlns="google:mail:notify" />';
+      }
+      $xml .= '</iq>';
+      $this->sendXML($xml);
+    }
+    
+    /*
+     * eventNewEMail() method is called when a new mail notification is received
+    */
+    function eventNewEMail($total,$thread,$url,$participation,$messages,$date,$senders,$labels,$subject,$snippet) {
+      // Extended by JAXL class (see jaxl.class.php)
+    }
     
     /*
      * eventMessage() method called when a message stanza is received
     */
     function eventMessage($fromJid, $content, $offline = FALSE) {
-      
+      // Extended by JAXL class (see jaxl.class.php)
     }
     
     /*
      * eventPresence() method is called when a presence stanza is received
     */
     function eventPresence($fromJid, $status, $photo) {
-      
+      // Extended by JAXL class (see jaxl.class.php)
     }
     
     /*
@@ -726,7 +804,7 @@
      * used to set a custom status message
     */
     function setStatus() {
-      // Extended by JAXL class
+      // Extended by JAXL class (see jaxl.class.php)
     }
     
   }

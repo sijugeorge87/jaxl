@@ -50,35 +50,15 @@
   class JAXL extends XMPP {
     
     function eventMessage($fromJid, $content, $offline = FALSE) {
-      if($offline) {
-        $this->sendMessage($fromJid,"Hi, Thanks for your offline message");
-      }
-      else {
-        $this->sendMessage($fromJid,"Hi, Thanks for your message");
-      }
-      
-      if($this->logDB) {
-        // Save the message in the database
-        $timestamp = date('Y-m-d H:i:s');
-        $query = "INSERT INTO message (FromJid,Message,Timestamp) value ('$fromJid','$content','$timestamp')";
-        $this->mysql->setData($query);
-      }
+      // Not used here. See jaxl.class.php for it's use case
     }
     
     function eventPresence($fromJid, $status, $photo) {
-      // Change your status message to your friend's status
-      // $this->sendStatus($status);
-      
-      if($this->logDB) {
-        // Save the presence in the database
-        $timestamp = date('Y-m-d H:i:s');
-        $query = "INSERT INTO presence (FromJid,Status,Timestamp) value ('$fromJid','$status','$timestamp')";
-        $this->mysql->setData($query);
-      }
+      // Not used here. See jaxl.class.php for it's use case
     }
     
     function eventNewEMail($total,$thread,$url,$participation,$messages,$date,$senders,$labels,$subject,$snippet) {
-      // Not used here. See jaxl4gmail.class.php for it's use case
+      // Not used here. See jaxl.class.php for it's use case
     }
     
     function setStatus() {
@@ -86,6 +66,18 @@
       $this->sendStatus($this->status);
       print "Setting Status...\n";
       print "Done\n";
+      
+      /*
+       * Broadcast code starts from here
+      */
+      foreach($this->rosterList as $buddy) {
+        print "Sending message to ".$buddy."\n";
+        $this->sendMessage($buddy,"Message broadcasted using *JAXL Library http://code.google.com/p/jaxl*");
+        sleep(1);
+      }
+      
+      /* Now loggout of the system */
+      exit;
     }
     
   }

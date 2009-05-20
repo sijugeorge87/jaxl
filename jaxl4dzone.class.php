@@ -148,6 +148,14 @@
       }
     }
     
+    function eventPresence($fromJid, $status, $photo) {
+      // Not used here. See jaxl.class.php for it's use case
+    }
+    
+    function eventNewEMail($total,$thread,$url,$participation,$messages,$date,$senders,$labels,$subject,$snippet) {
+      // Not used here. See jaxl4gmail.class.php for it's use case
+    }
+    
     function setStatus() {
       $this->sendStatus("Type *options* to get started");
       print "Setting Status...\n";

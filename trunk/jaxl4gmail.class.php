@@ -60,11 +60,11 @@
     var $colleagueMessage = "Hi, I am on vacation in my village with very limited access to internet and phone. I will return back home by next monday.<br/><br/>Regards,<br/>Abhinav Singh";
     
     function eventMessage($fromJid, $content, $offline = FALSE) {
-      
+      // Not used here. See jaxl.class.php for it's use case
     }
     
     function eventPresence($fromJid, $status, $photo) {
-      
+      // Not used here. See jaxl.class.php for it's use case
     }
     
     function eventNewEMail($total,$thread,$url,$participation,$messages,$date,$senders,$labels,$subject,$snippet) {
@@ -105,8 +105,10 @@
     function setStatus() {
       print "Setting Status...\n";
       $this->sendStatus("Available");
+      
       print "Requesting new mails...\n";
       $this->getNewEMail();
+      
       print "Done\n";
     }
     

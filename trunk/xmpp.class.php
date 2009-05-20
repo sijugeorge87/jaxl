@@ -77,6 +77,9 @@
       $this->resource = "jaxl";
       $this->status = "Online using JAXL - Just Another XMPP Library";
       
+      // Array that saves all roster list
+      $this->rosterList = array();
+      
       // This variable is set to TRUE when authentication, service discovery, roster request has taken place
       $this->done = FALSE;
       
@@ -423,6 +426,11 @@
             if(count($rosters)) {
               foreach($rosters as $roster) {
                 $roster = $roster["@"];
+                
+                // Save the rosterList
+                array_push($this->rosterList,$roster["jid"]);
+                $this->rosterList = array_unique($this->rosterList);
+                
                 if($roster["subscription"] == "none") {
                   $this->subscribe($roster["jid"]);
                 }

@@ -37,10 +37,19 @@
 5. Customize eventMessage() and eventPresence() methods in jaxl.class.php to suit your application needs.
    By default eventMessage() sends back a message "Hi, Thanks for your message" for every message received.
 
-6. Open a command line and migrate to the folder.
+6. Also now customize eventNewEMail() to control your gmail mails directly.
+   See jaxl4gmail.class.php for a simple use case
+
+7. Open a command line and migrate to the folder.
    Run: php index.php 
    from command line and monitor the logs under /logs folder
 
-7. For more documentation refer
+8. For more documentation refer
    http://abhinavsingh.com/blog/2009/01/introducing-jaxl-open-source-jabber-xmpp-library/
+   
+9. JAXL Extensions (MUST SEE):
+   jaxl.class.php
+   jaxl4dzone.class.php
+   jaxl4gmail.class.php
+   jaxl4broadcast.class.php
    

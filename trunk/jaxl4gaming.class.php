@@ -181,7 +181,7 @@
     function remove_user_from_arena($jid) { 
        if(isset($this->user_jids[$jid])) {
 	 $this->user_jids[$jid]['status'] = 'offline';
-         $this->user_jids[$jid]['end_time'] = $this->user_jids[$jid]['start_time'];
+         $this->user_jids[$jid]['end_time'] = time();
        }
        return TRUE;
     }
@@ -214,7 +214,8 @@
     }
 
     function increase_user_points($jid) {
-      $this->user_jids[$jid]['points']++;
+      if(!isset($this->user_jids[$jid]['points'])) $this->user_jids[$jid]['points'] = 0;
+      $this->user_jids[$jid]['points'] += 1;
     }
     
   }

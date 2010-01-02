@@ -54,7 +54,7 @@
         $this->sendMessage($fromJid,"Hi, Thanks for your offline message");
       }
       else {
-        $this->sendMessage($fromJid,"Hi, Thanks for your message");
+        $this->sendMessage($fromJid,"Hi, Thanks for your message"); 
       }
       
       if($this->logDB) {

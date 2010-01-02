@@ -7,18 +7,7 @@
   include_once("jaxl.class.php");
   
   /* Create an instance of XMPP Class */
-  $jaxl = new JAXL($key[$env]['host'],    // Jabber Server Hostname
-                   $key[$env]['port'],    // Jabber Server Port
-                   $key[$env]['user'],    // Jabber User
-                   $key[$env]['pass'],    // Jabber Password
-                   $key[$env]['domain'],  // Jabber Domain
-                   $db[$env]['dbhost'],   // MySQL DB Host
-                   $db[$env]['dbname'],   // MySQL DB Name
-                   $db[$env]['dbuser'],   // MySQL DB User
-                   $db[$env]['dbpass'],   // MySQL DB Pass
-                   $logEnable,            // Enable Logging
-                   $logDB                 // Enable MySQL Logging
-                  );
+  $jaxl = new JAXL();
   
   try {
     /* Initiate the connection */

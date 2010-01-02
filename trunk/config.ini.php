@@ -39,7 +39,7 @@
    * You can define your own enviornments as needed
    * ==================================== IMPORTANT =========================================
   */
-  
+
   // Set an enviornment
   $env = "prod";
   
@@ -48,7 +48,7 @@
   
   // Log in MySQL database
   $logDB = FALSE;
-  
+
   $key = array("prod"=>array("user"=>"myproductionuser",
                              "pass"=>"password",
                              "host"=>"talk.google.com",
@@ -74,5 +74,8 @@
                             "dbname"=>"jaxl"
                            )
              );
+  
+  // Ping server after every x empty responses from the server
+  define('JAXL_PING_INTERVAL', 60);
   
 ?>

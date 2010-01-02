@@ -116,7 +116,10 @@
 
       // XEP-0199: XMPP Ping parameters
       $this->emptyResponses = 0;
-      
+     
+      // XEP-0133: Service Administration
+      $this->command = array();
+ 
       $this->logger = new Logger("Initializing class variables");
       if($this->logDB) { $this->mysql = new MySQL($dbhost,$dbname,$dbuser,$dbpass); }
       $this->xmlize = new XML();
@@ -399,7 +402,7 @@
         $this->connect();
       }
     }
-    
+   
     /*
      * parseSuccess() method is called after successful authentication
     */
@@ -414,7 +417,10 @@
      * parseIq() method
     */
     function parseIq($arr) {
-      if(isset($arr["iq"]["#"]["mailbox"])) {
+      if(isset($arr["iq"]["#"]["command"])) {
+        $this->processCommand($arr); 
+      }
+      else if(isset($arr["iq"]["#"]["mailbox"])) {
         // Implementation of Google's Gmail Extension http://code.google.com/apis/talk/jep_extensions/gmail.html
         $GmailThreadId = array();
         $GmailURL = array();
@@ -838,7 +844,232 @@
       $xml .= '</iq>';
       $this->sendXML($xml);
     }
+
+    /* XEP-0133 Service Administration Starts */
+    function processCommand($arr) {
+      global $env, $key;
+      
+      $command = end(explode("#", $arr["iq"]["#"]["command"][0]["@"]["node"]));
+      if($arr["iq"]["#"]["command"][0]["@"]["status"] == "executing") {
+        $id = $arr["iq"]["@"]["id"];
+        switch($command) {
+          case 'add-user' || 'delete-user':
+	    $xml = '<iq type="set" from="'.$this->jid.'" to="'.$key[$env]['domain'].'" xml:lang="en">';
+            $sessionId = $arr["iq"]["#"]["command"][0]["@"]["sessionid"];
+	    $xml .= '<command xmlns="http://jabber.org/protocol/commands" node="http://jabber.org/protocol/admin#'.$command.'" sessionid="'.$sessionId.'">';
+	    $xml .= '<x xmlns="jabber:x:data" type="submit">';
+	    foreach($arr["iq"]["#"]["command"][0]["#"]["x"][0]["#"]["field"] as $field) {
+ 	      $type = $field["@"]["type"];
+	      $var = $field["@"]["var"];
+	      if(isset($field["#"]["value"][0]["#"])) $value = $field["#"]["value"][0]["#"];
+	      else $value = $this->command[$command][$id][$var];
+	      if(isset($field["#"]["required"])) $required = TRUE;
+	      else $required = FALSE;
+	      $xml .= '<field type="'.$type.'" var="'.$var.'">';
+	      $xml .= '<value>'.$value.'</value>';
+	      $xml .= '</field>';
+            }
+	    $xml .= '</x>';
+            $xml .= '</command>';
+	    $xml .= '</iq>';
+	    $this->command["session-id"][$sessionId] = $id;
+            break;
+          default:
+            break;
+        }
+	$this->sendXML($xml);
+      }
+      else if($arr["iq"]["#"]["command"][0]["@"]["status"] == "completed") {
+	$sessionId = $arr["iq"]["#"]["command"][0]["@"]["sessionid"];
+        if($this->command[$command][$this->command["session-id"][$sessionId]]["callback"]) {
+	  $callback = $this->command[$command][$this->command["session-id"][$sessionId]]["callback"];
+	  unset($this->command[$command][$this->command["session-id"][$sessionId]]);
+	  unset($this->command["session-id"][$sessionId]);
+	  call_user_func($callback, "completed");
+	}
+      }
+    }
+
+    function sendCommand($type, $param) {
+      global $env, $key;
+       
+      $id = $this->getId();
+
+      $xml = '<iq type="set" from="'.$this->jid.'" to="'.$key[$env]['domain'].'" id="'.$id.'" xml:lang="en">';
+      $xml .= '<command xmlns="http://jabber.org/protocol/commands" action="execute" node="http://jabber.org/protocol/admin#'.$type.'"/>';
+      $xml .= '</iq>';
+
+      switch($type) {
+        case 'add-user':
+          $this->command[$type][$id] = array('accountjid'=>$param[0].'@'.$key[$env]['domain'], 'password'=>$param[1], 'password-verify'=>$param[1], 'email'=>$param[2], 'given_name'=>$param[3], 'surname'=>$param[4], 'callback'=>$param[5]);
+	  break;
+	case 'delete-user' || 'disable-user' || 'reenable-user' || 'end-user-session':
+	  $this->command[$type][$id] = array('accountjids'=>$param[0].'@'.$key[$env]['domain'], 'callback'=>$param[1]);
+	  break;
+	default:
+	  $thi->logger->logger("Command not implemented...");
+	  break;
+      }
+
+      $this->sendXML($xml);
+    }
+ 
+    function addUser($bareJid, $password, $email, $firstName=FALSE, $lastName=FALSE, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("add-user", $param);
+    }
+
+    function deleteUser($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("delete-user", $param);
+    }
+
+    function disableUser($bareJid, $callback=FALSE) { 
+      $param = func_get_args();
+      $this->sendCommand("disable-user", $param);
+    }
+
+    function reEnableUser($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("reenable-user", $param);
+    }
+
+    function endUserSession($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("end-user-session", $param);
+    }
+
+    function getUserPassword($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-user-password", $param);
+    }
+
+    function changeUserPassword($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("change-user-password", $param);
+    }
+
+    function getUserRoster($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-user-roster", $param);
+    }
+
+    function getUserLastLoginTime($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-user-lastlogin", $param);
+    }
+
+    function getUserStats($bareJid, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("user-stats", $param);
+    }
+
+    function editBlacklist($bareJids, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("edit-blacklist", $param);
+    }
+
+    function editWhitelist($bareJids, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("edit-whitelist", $param);
+    }
      
+    function getRegisteredUserCount() {
+      $param = func_get_args();
+      $this->sendCommand("get-registered-users-num", $param);
+    }
+
+    function getDisabledUserCount() {
+      $param = func_get_args();
+      $this->sendCommand("get-disabled-users-num", $param);
+    }
+
+    function getOnlineUserCount() {
+      $param = func_get_args();
+      $this->sendCommand("get-online-users-num", $param);
+    }
+
+    function getActiveUserCount() {
+      $param = func_get_args();
+      $this->sendCommand("get-active-users-num", $param);
+    }
+
+    function getIdleUserCount() {
+      $param = func_get_args();
+      $this->sendCommand("get-idle-users-num", $param);
+    }
+
+    function getRegisteredUserList($item, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-registered-users-list", $param);
+    }
+
+    function getDisabledUserList($item, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-disabled-users-list", $param);
+    }
+
+    function getOnlineUserList($item, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-online-users-list", $param);
+    }
+
+    function getActiveUserList($item, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-active-users", $param);
+    }
+
+    function getIdleUserList($item, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("get-idle-users", $param);
+    }
+
+    function sendAnnouncement($announcement, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("announce", $param);
+    }
+
+    function setMOTD($message, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("set-motd", $param);
+    }
+
+    function editMOTD($message, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("edit-motd", $param);
+    }
+
+    function deleteMOTD() {
+      $param = func_get_args();
+      $this->sendCommand("delete-motd", $param);
+    }
+
+    function setWelcomeMessage($message, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("set-welcome", $param);
+    }
+
+    function deleteWelcomeMessage() {
+      $param = func_get_args();
+      $this->sendCommand("delete-welcome", $param);
+    }
+
+    function editAdminList($bareJids, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("edit-admin", $param);
+    }
+
+    function restartService($delay, $announcement, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("restart", $param);
+    }
+
+    function shutdownService($delay, $announcement, $callback=FALSE) {
+      $param = func_get_args();
+      $this->sendCommand("shutdown", $param);
+    }
+    /* XEP-0133 Service Administration Ends */
+
     /*
      * eventNewEMail() method is called when a new mail notification is received
     */

@@ -236,6 +236,7 @@
         return FALSE;
       }
       else {
+	$this->emptyResponses = 0;
         if($this->auth) {
           $xmlarr = $this->splitXML($xml);
           $packetCount = count($xmlarr);
@@ -392,7 +393,8 @@
     function parseProceed($arr) {
       if($arr["proceed"]["@"]["xmlns"] == "urn:ietf:params:xml:ns:xmpp-tls") {
         stream_set_blocking($this->stream, 1);
-        stream_socket_enable_crypto($this->stream, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+        if(!stream_socket_enable_crypto($this->stream, TRUE, STREAM_CRYPTO_METHOD_TLS_CLIENT))
+	  stream_socket_enable_crypto($this->stream, TRUE, STREAM_CRYPTO_METHOD_SSLv3_CLIENT);
         stream_set_blocking($this->stream, 0);
         $this->connect();
       }

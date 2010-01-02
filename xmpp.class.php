@@ -469,7 +469,7 @@
           case "jabber:iq:roster":
             $rosters = $arr["iq"]["#"]["query"][0]["#"]["item"];
             // Do-not enter this loop, if no item present in roster
-            if(count($rosters)) {
+            if(is_array($rosters)) {
               foreach($rosters as $roster) {
                 $roster = $roster["@"];
                 

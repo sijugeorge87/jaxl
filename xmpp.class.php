@@ -44,7 +44,9 @@
    *    bind(), splitXML(), subscribe(), eventMessage(), eventPresence(), explodeData(), implodeData()
    *    encryptPassword(), getBareJid(), splitJid(), roster(), setStatus()
   */
-  
+ 
+  declare(ticks=1);
+ 
   include_once("logger.class.php");
   include_once("mysql.class.php");
   include_once("xml.class.php");
@@ -54,7 +56,33 @@
     /*
      * __construct() method performs various initialization
     */
-    function __construct($host,$port,$user,$pass,$domain,$dbhost,$dbname,$dbuser,$dbpass,$logEnable,$logDB) {
+    function __construct() {
+      pcntl_signal(SIGINT, array($this, "shutdown"));
+      pcntl_signal(SIGTERM, array($this, "shutdown"));
+
+      $this->init();
+    }
+    
+    /*
+     * __destruct()
+    */
+    function __destruct() {
+      $this->disconnect();
+    }
+    
+    function init() { 
+      global $env, $key, $db, $logEnable, $logDB;
+      
+      $host = $key[$env]['host'];    // Jabber Server Hostname                
+      $port = $key[$env]['port'];    // Jabber Server Port                    
+      $user = $key[$env]['user'];    // Jabber User                           
+      $pass = $key[$env]['pass'];    // Jabber Password                       
+      $domain = $key[$env]['domain'];  // Jabber Domain                         
+      $dbhost = $db[$env]['dbhost'];   // MySQL DB Host                         
+      $dbname = $db[$env]['dbname'];   // MySQL DB Name                         
+      $dbuser = $db[$env]['dbuser'];   // MySQL DB User                         
+      $dbpass = $db[$env]['dbpass'];   // MySQL DB Pass                         
+ 
       $this->isConnected = FALSE;      
       $this->stream = NULL;
       $this->auth = NULL;
@@ -85,20 +113,15 @@
       
       // Gmail Email related variables
       $this->resultTime = FALSE;
+
+      // XEP-0199: XMPP Ping parameters
+      $this->emptyResponses = 0;
       
       $this->logger = new Logger("Initializing class variables");
       if($this->logDB) { $this->mysql = new MySQL($dbhost,$dbname,$dbuser,$dbpass); }
       $this->xmlize = new XML();
     }
-    
-    /*
-     * __destruct()
-    */
-    function __destruct() {
-      $this->sendEndStream();
-      $this->isConnected = FALSE;
-    }
-    
+
     /* 
      * connect() method which make a TCP connection $host:$post
     */
@@ -125,7 +148,23 @@
         $this->sendStream();
       }
     }
-    
+   
+    function disconnect() {
+      $this->sendEndStream();
+      $this->isConnected = FALSE;
+    }
+
+    function reconnect() {
+      $this->disconnect();
+      $this->init();
+      $this->connect();
+    }
+
+    function shutdown() {
+      $this->disconnect();
+      exit;
+    }
+ 
     /*
      * sendStream() method sends the initial stream to jabber server
     */
@@ -187,17 +226,17 @@
       }
       $xml = trim($xml);
       
-      if(empty($xml)) {
+      if(empty($xml)) { 
+	$this->emptyResponses++;
+	if($this->emptyResponses >= JAXL_PING_INTERVAL) {
+          global $env, $key;
+          $this->ping($key[$env]['domain']);
+          $this->emptyResponses = 0;
+        }
         return FALSE;
       }
       else {
-        // Required this check, because before auth <stream:stream> and <stream:features> are sent together
-        // And I already wrote parseStream() method according to that behaviour
-        // splitXML() would have broken that method
         if($this->auth) {
-          // Maximum possible read is 2048*1600
-          // Which can possibly contain more than one XML Stanza
-          // Split them all, and parse them one by one
           $xmlarr = $this->splitXML($xml);
           $packetCount = count($xmlarr);
           for($i=0;$i<$packetCount;$i++) {
@@ -236,7 +275,7 @@
     /*
      * streamHandler() handles the incoming xml stream
      * It also returns back necessary streams back to main program
-     * for further processing (e.g. messages ..)
+     * for further processing (e.g. messages, presence ..)
     */
     function streamHandler($arr) {
       if(empty($arr)) {
@@ -278,9 +317,14 @@
      * parseError() method parses the stream error cases
     */
     function parseError($arr) {
-      if(isset($arr["stream:error"]["#"]["see-other-host"]) && $arr["stream:error"]["#"]["str:text"][0]["@"]["xmlns:str"] == "urn:ietf:params:xml:ns:xmpp-streams") {
-        // http://code.google.com/p/jaxl/issues/detail?id=6
-        // Bug # 6, to be fixed in upcoming releases
+      if(isset($arr["stream:error"]["#"]["see-other-host"]) /*&& $arr["stream:error"]["#"]["str:text"][0]["@"]["xmlns:str"]=="urn:ietf:params:xml:ns:xmpp-streams"*/) {
+        // Problem: http://code.google.com/p/jaxl/issues/detail?id=6
+        // Solution: http://xmpp.org/internet-drafts/draft-saintandre-rfc3920bis-08.html#streams-error-conditions-see-other-host
+	if(isset($arr["stream:error"]["#"]["str:text"][0]["#"])) {
+	  global $env, $key;
+	  $key[$env]['host'] = $arr["stream:error"]["#"]["str:text"][0]["#"];
+        }
+        $this->reconnect();
       }
     }
     
@@ -290,7 +334,7 @@
     function parseStream($arr) {
       if($arr["stream:stream"]['@']['xmlns'] != "jabber:client" || 
          $arr["stream:stream"]['@']["xmlns:stream"] != "http://etherx.jabber.org/streams") {
-        $this->logger("Unrecognized stream packet received");
+        $this->logger->logger("Unrecognized stream packet received");
       }
       else {
         $this->streamId = $arr["stream:stream"]['@']['id'];
@@ -785,7 +829,14 @@
       $xml .= '</iq>';
       $this->sendXML($xml);
     }
-    
+
+    function ping($toJid='') {
+      $xml = '<iq type="get" from="'.$this->jid.'" to="'.$toJid.'" id="'.$this->getId().'">';
+      $xml .= '<ping xmlns="urn:xmpp:ping"/>';
+      $xml .= '</iq>';
+      $this->sendXML($xml);
+    }
+     
     /*
      * eventNewEMail() method is called when a new mail notification is received
     */

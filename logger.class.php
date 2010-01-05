@@ -47,10 +47,12 @@
     /*
      * logger() method function which logs in all XML sent or received
     */
-    function logger($log) {
-      $fh = fopen($this->logFileName,"a");
-      fwrite($fh,date('Y-m-d H:i:s')."\n".$log."\n\n");
-      fclose($fh);
+    function logger($log='') {
+      if($log != '') {
+        $fh = fopen($this->logFileName,"a");
+        fwrite($fh,date('Y-m-d H:i:s')."\n".$log."\n\n");
+        fclose($fh);
+      }
     }
     
   }

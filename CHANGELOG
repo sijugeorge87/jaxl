@@ -1,3 +1,10 @@
+Version 1.0.5 (In Trunk)
+------------------------
+Added Service Administration support (XEP-0133). Available methods addUser(), deleteUser()
+Jaxl now checks for SSLv3 if TLS auth fails
+Added server ping support (Fixes the bug where the bot goes offline after long inactivity)
+Added Signal handlers for disconnecting the bot when SIGINT or SIGTERM is received (Fixes the bug where the bot remains offline when script is killed manually through CNTR+C)
+
 Version 1.0.4
 -------------
 Implementation of Google's Gmail Extension http://code.google.com/apis/talk/jep_extensions/gmail.html

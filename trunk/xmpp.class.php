@@ -119,6 +119,10 @@
      
       // XEP-0133: Service Administration
       $this->command = array();
+
+      // Custom Jaxl library implementation for providing periodic job handlers
+      $this->jobs = array();
+      $this->jobsTick = 1;
  
       $this->logger = new Logger("Initializing class variables");
       if($this->logDB) { $this->mysql = new MySQL($dbhost,$dbname,$dbuser,$dbpass); }
@@ -236,7 +240,6 @@
           $this->ping($key[$env]['domain']);
           $this->emptyResponses = 0;
         }
-        return FALSE;
       }
       else {
 	$this->emptyResponses = 0;
@@ -262,6 +265,9 @@
           $this->streamHandler($arr);
         }
       }
+      
+      // process scheduled jobs
+      if($this->done) $this->processJobs();
     }
     
     /*
@@ -1069,6 +1075,23 @@
       $this->sendCommand("shutdown", $param);
     }
     /* XEP-0133 Service Administration Ends */
+
+    /* Start: Custom Jaxl library implementation for providing periodic job handlers */
+    function addJob($interval, $callback) {
+      $this->jobs[$interval][] = $callback;
+    }
+   
+    function processJobs() {
+      foreach($this->jobs as $interval => $callbacks) {
+        if(($this->jobsTick % $interval) == 0) {
+          foreach($callbacks as $callback) {
+            call_user_func($callback);
+          }
+        }
+      }
+      $this->jobsTick++;
+    }
+    /* End: Custom Jaxl library implementation for providing periodic job handlers */
 
     /*
      * eventNewEMail() method is called when a new mail notification is received

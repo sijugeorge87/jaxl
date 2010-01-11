@@ -77,5 +77,9 @@
   
   // Ping server after every x empty responses from the server
   define('JAXL_PING_INTERVAL', 60);
+
+  // Jaxl Server administration extension config params
+  define('JAXL_SERVER_ADMIN', 'webmaster@foobar.com');
+  define('JAXL_SERVER_LOAD_POLL_INTERVAL', 10);
   
 ?>

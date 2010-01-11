@@ -46,9 +46,6 @@
 
   /* Include XMPP Class */
   include_once("xmpp.class.php");
-  
-  define('JAXL_SERVER_ADMIN', 'mailsforabhinav@gmail.com');
-  define('JAXL_SERVER_LOAD_POLL_INTERVAL', 10);
 
   class JAXL extends XMPP {
     

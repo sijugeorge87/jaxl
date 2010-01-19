@@ -57,8 +57,19 @@
      * __construct() method performs various initialization
     */
     function __construct() {
-      pcntl_signal(SIGINT, array($this, "shutdown"));
-      pcntl_signal(SIGTERM, array($this, "shutdown"));
+      $this->configure();
+
+      if($this->phpLINUX && $this->phpPCNTL) {
+        pcntl_signal(SIGINT, array($this, "shutdown"));
+        pcntl_signal(SIGTERM, array($this, "shutdown"));
+        print "OSType: Linux, Registering shutdown for SIGINT and SIGTERM\n";
+      }
+      else {
+        print "OSType: Windows, Unable to register shutdown functions, try moving to a linux box\n";
+      }
+
+      if(!$this->phpOPENSSL) print "OpenSSL: Disabled for CLI, kindly enable if unable to authenticate\n";
+      else print "OpenSSL: Enabled for CLI\n";
 
       $this->init();
     }
@@ -70,6 +81,12 @@
       $this->disconnect();
     }
     
+    function configure() {
+      $this->phpPCNTL = (extension_loaded('pcntl') === TRUE) ? TRUE : FALSE;
+      $this->phpOPENSSL = (extension_loaded('openssl') === TRUE) ? TRUE : FALSE;
+      $this->phpLINUX = (strtoupper(substr(PHP_OS, 0,3)) == "WIN") ? FALSE : TRUE;
+    }
+
     function init() { 
       global $env, $key, $db, $logEnable, $logDB;
       
